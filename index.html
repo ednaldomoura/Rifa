@@ -1,0 +1,257 @@
+<!-- Sistema de Rifa com Cores Vivas e Efeitos Especiais -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Rifa</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0a2342, #43e97b, #ff3b3f, #0a2342);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      animation: bgmove 10s infinite alternate;
+    }
+    @keyframes bgmove {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+    h1 {
+      color: #0a2342;
+      text-shadow: 2px 2px 8px #43e97b88;
+      margin-top: 30px;
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+    }
+    .container {
+      background: rgba(255,255,255,0.98);
+      border-radius: 20px;
+      box-shadow: 0 8px 32px 0 rgba(10, 35, 66, 0.18);
+      padding: 30px 40px;
+      margin: 30px 0;
+      max-width: 400px;
+      width: 100%;
+      animation: fadein 1s;
+    }
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    label {
+      color: #0a2342;
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    input[type="text"], select, input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 16px 0;
+      border: 2px solid #43e97b;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border 0.3s;
+      background: #f8faff;
+      color: #0a2342;
+    }
+    input:focus, select:focus {
+      border: 2px solid #ff3b3f;
+      outline: none;
+    }
+    button {
+      background: linear-gradient(90deg, #43e97b, #ff3b3f, #0a2342, #43e97b);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 12px #0a234222;
+      margin-top: 10px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      background-size: 200% 200%;
+      animation: btnmove 2s infinite alternate;
+    }
+    @keyframes btnmove {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 100% 50%; }
+    }
+    button:hover {
+      transform: scale(1.07);
+      box-shadow: 0 8px 24px #43e97b33;
+    }
+    .participantes {
+      margin-top: 20px;
+      background: #e6f7ef;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 2px 8px #0a234211;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .participante {
+      padding: 6px 0;
+      border-bottom: 1px solid #ff3b3f44;
+      font-size: 1.05rem;
+      color: #0a2342;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .participante:last-child {
+      border-bottom: none;
+    }
+    .sorteio {
+      margin-top: 30px;
+      text-align: center;
+    }
+    .ganhador {
+      margin: 18px auto 0 auto;
+      padding: 18px 0;
+      background: linear-gradient(90deg, #43e97b, #0a2342, #ff3b3f);
+      color: #fff;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px #0a234233;
+      animation: winnerpop 0.7s;
+      text-shadow: 2px 2px 8px #43e97b66;
+      max-width: 350px;
+    }
+    @keyframes winnerpop {
+      0% { transform: scale(0.7); opacity: 0; }
+      80% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <h1>Sistema de Rifa</h1>
+  <div class="container">
+    <form id="formRifa" autocomplete="off">
+      <label for="nome">Nome do Participante:</label>
+      <input type="text" id="nome" required placeholder="Digite o nome" />
+      <label for="numero">Número da Rifa:</label>
+      <select id="numero" required>
+        <option value="">Selecione um número</option>
+      </select>
+      <button type="submit">Adicionar Participante</button>
+    </form>
+    <div class="participantes" id="listaParticipantes">
+      <!-- Participantes aparecerão aqui -->
+    </div>
+  </div>
+  <div class="container sorteio">
+    <label for="qtd">Quantidade de Ganhadores:</label>
+    <input type="number" id="qtd" min="1" value="1" style="width:80px; margin-bottom:10px;" />
+    <button onclick="iniciarContagem()">Sortear</button>
+    <div id="contador" style="font-size:1.3rem; color:#ff6f61; font-weight:bold; margin-top:10px;"></div>
+    <div id="ganhadores"></div>
+  </div>
+  <script>
+    let participantes = [];
+    const form = document.getElementById('formRifa');
+    const lista = document.getElementById('listaParticipantes');
+    const ganhadoresDiv = document.getElementById('ganhadores');
+    const contadorDiv = document.getElementById('contador');
+    let intervaloContador = null;
+
+    // Preencher select de 1 a 100
+    const selectNumero = document.getElementById('numero');
+    for (let i = 1; i <= 100; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i;
+      selectNumero.appendChild(opt);
+    }
+
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      const nome = document.getElementById('nome').value.trim();
+      const numero = document.getElementById('numero').value;
+      if (!nome || !numero) return;
+      if (participantes.some(p => p.numero === numero)) {
+        alert('Este número já foi cadastrado!');
+        return;
+      }
+      participantes.push({ nome, numero, status: '' });
+      atualizarLista();
+      form.reset();
+      document.getElementById('nome').focus();
+    };
+
+    function atualizarLista() {
+      lista.innerHTML = participantes.map(p => `<div class='participante'><span><b>#${p.numero}</b> - ${p.nome}</span>
+        <button onclick='marcarPago("${p.numero}")' style='background:#43e97b; color:#fff; border:none; border-radius:5px; margin-left:5px; padding:4px 10px; font-size:0.9rem;'>Pago</button>
+        <button onclick='marcarFaltaPagar("${p.numero}")' style='background:#ff3b3f; color:#fff; border:none; border-radius:5px; margin-left:5px; padding:4px 10px; font-size:0.9rem;'>Falta Pagar</button>
+        <button onclick='remover("${p.numero}")' style='background:#0a2342; color:#fff; padding:4px 10px; font-size:0.9rem; border:none; border-radius:5px; margin-left:5px;'>X</button>
+        <span id='status-${p.numero}' style='margin-left:10px; font-weight:bold; color:${p.status === 'pago' ? '#43e97b' : (p.status === 'falta' ? '#ff3b3f' : '#0a2342')};'>${p.status === 'pago' ? 'Pago' : (p.status === 'falta' ? 'Falta Pagar' : '')}</span>
+      </div>`).join('');
+    }
+
+    window.remover = function(numero) {
+      participantes = participantes.filter(p => p.numero !== numero);
+      atualizarLista();
+    };
+
+    window.marcarPago = function(numero) {
+      const idx = participantes.findIndex(p => p.numero === numero);
+      if (idx !== -1) {
+        participantes[idx].status = 'pago';
+        atualizarLista();
+      }
+    };
+
+    window.marcarFaltaPagar = function(numero) {
+      const idx = participantes.findIndex(p => p.numero === numero);
+      if (idx !== -1) {
+        participantes[idx].status = 'falta';
+        atualizarLista();
+      }
+    };
+
+    function iniciarContagem() {
+      if (intervaloContador) return; // Evita múltiplas contagens
+      let tempo = 10;
+      contadorDiv.textContent = `Sorteando em ${tempo} segundos...`;
+      ganhadoresDiv.innerHTML = '';
+      intervaloContador = setInterval(() => {
+        tempo--;
+        if (tempo > 0) {
+          contadorDiv.textContent = `Sorteando em ${tempo} segundos...`;
+        } else {
+          clearInterval(intervaloContador);
+          intervaloContador = null;
+          contadorDiv.textContent = '';
+          sortear();
+        }
+      }, 1000);
+    }
+
+    function sortear() {
+      ganhadoresDiv.innerHTML = '';
+      let qtd = parseInt(document.getElementById('qtd').value);
+      if (participantes.length === 0) {
+        ganhadoresDiv.innerHTML = '<div class="ganhador">Nenhum participante cadastrado!</div>';
+        return;
+      }
+      if (qtd > participantes.length) qtd = participantes.length;
+      const copia = [...participantes];
+      const ganhadores = [];
+      for (let i = 0; i < qtd; i++) {
+        const idx = Math.floor(Math.random() * copia.length);
+        ganhadores.push(copia[idx]);
+        copia.splice(idx, 1);
+      }
+      ganhadoresDiv.innerHTML = ganhadores.map(g => `<div class='ganhador'>🎉 Nº <b>${g.numero}</b> - <span>${g.nome}</span><br><span style='font-size:1.2rem;color:#f9d423;'>Meus parabéns, você é o vencedor!</span></div>`).join('');
+    }
+  </script>
+</body>
+</html>
