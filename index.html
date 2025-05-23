@@ -152,11 +152,18 @@
     <label for="qtd">Quantidade de Ganhadores:</label>
     <input type="number" id="qtd" min="1" value="1" style="width:80px; margin-bottom:10px;" />
     <button onclick="iniciarContagem()">Sortear</button>
+    <button type="button" onclick="mostrarRelatorio()" style="background:#0a2342; color:#fff; margin-left:10px;">Relatório</button>
     <div id="contador" style="font-size:1.3rem; color:#ff6f61; font-weight:bold; margin-top:10px;"></div>
     <div id="ganhadores"></div>
   </div>
+  <div class="container" id="relatorioContainer" style="display:none; margin-bottom:40px;">
+    <h2 style="color:#0a2342;">Relatório de Participantes</h2>
+    <div id="relatorio"></div>
+    <button onclick="fecharRelatorio()" style="background:#ff3b3f; color:#fff; margin-top:10px;">Fechar Relatório</button>
+  </div>
   <script>
     let participantes = [];
+    let ultimoGanhadores = [];
     const form = document.getElementById('formRifa');
     const lista = document.getElementById('listaParticipantes');
     const ganhadoresDiv = document.getElementById('ganhadores');
@@ -250,7 +257,26 @@
         ganhadores.push(copia[idx]);
         copia.splice(idx, 1);
       }
+      ultimoGanhadores = ganhadores.map(g => g.numero); // Salva os números dos ganhadores
       ganhadoresDiv.innerHTML = ganhadores.map(g => `<div class='ganhador'>🎉 Nº <b>${g.numero}</b> - <span>${g.nome}</span><br><span style='font-size:1.2rem;color:#f9d423;'>Meus parabéns, você é o vencedor!</span></div>`).join('');
+    }
+
+    function mostrarRelatorio() {
+      const relatorioDiv = document.getElementById('relatorio');
+      const relatorioContainer = document.getElementById('relatorioContainer');
+      if (participantes.length === 0) {
+        relatorioDiv.innerHTML = '<p>Nenhum participante cadastrado.</p>';
+      } else {
+        relatorioDiv.innerHTML = `<table style='width:100%;border-collapse:collapse;'>
+          <tr style='background:#0a2342; color:#fff;'><th style='padding:6px;'>Nº</th><th style='padding:6px;'>Nome</th><th style='padding:6px;'>Status</th><th style='padding:6px;'>Ganhador</th></tr>` +
+          participantes.map(p => `<tr style='background:${p.status==="pago"?"#43e97b22":(p.status==="falta"?"#ff3b3f22":"#fff")};'><td style='padding:6px;text-align:center;'>${p.numero}</td><td style='padding:6px;'>${p.nome}</td><td style='padding:6px;text-align:center;color:${p.status==="pago"?"#43e97b":(p.status==="falta"?"#ff3b3f":"#0a2342")};font-weight:bold;'>${p.status==="pago"?"Pago":(p.status==="falta"?"Falta Pagar":"-")}</td><td style='padding:6px;text-align:center;font-weight:bold;color:#ff3b3f;'>${ultimoGanhadores.includes(p.numero) ? '🏆' : ''}</td></tr>`).join('') + '</table>';
+      }
+      relatorioContainer.style.display = 'block';
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    function fecharRelatorio() {
+      document.getElementById('relatorioContainer').style.display = 'none';
     }
   </script>
 </body>
