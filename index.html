@@ -163,7 +163,8 @@
   </div>
   <script>
     let participantes = [];
-    let ultimoGanhadores = [];
+    let ultimosGanhadores = [];
+    let historicoGanhadores = [];
     const form = document.getElementById('formRifa');
     const lista = document.getElementById('listaParticipantes');
     const ganhadoresDiv = document.getElementById('ganhadores');
@@ -257,19 +258,30 @@
         ganhadores.push(copia[idx]);
         copia.splice(idx, 1);
       }
-      ultimoGanhadores = ganhadores.map(g => g.numero); // Salva os números dos ganhadores
+      ultimosGanhadores = ganhadores.map(g => ({ numero: g.numero, nome: g.nome }));
+      // Salva no histórico com data/hora
+      historicoGanhadores.push({
+        data: new Date().toLocaleString('pt-BR'),
+        ganhadores: ultimosGanhadores.map(g => ({ numero: g.numero, nome: g.nome }))
+      });
       ganhadoresDiv.innerHTML = ganhadores.map(g => `<div class='ganhador'>🎉 Nº <b>${g.numero}</b> - <span>${g.nome}</span><br><span style='font-size:1.2rem;color:#f9d423;'>Meus parabéns, você é o vencedor!</span></div>`).join('');
     }
 
     function mostrarRelatorio() {
       const relatorioDiv = document.getElementById('relatorio');
       const relatorioContainer = document.getElementById('relatorioContainer');
+      let ganhadorHtml = '';
+      // Histórico de todos os sorteios
+      if (historicoGanhadores.length > 0) {
+        ganhadorHtml = `<div style='margin-bottom:15px;'><b style='color:#ff3b3f;'>Histórico de Ganhadores:</b><ul style='padding-left:18px;'>` +
+          historicoGanhadores.map(h => `<li><span style='color:#0a2342;'>${h.data}:</span> ` + h.ganhadores.map(g => `Nº <b>${g.numero}</b> - ${g.nome}`).join(' | ') + '</li>').join('') + '</ul></div>';
+      }
       if (participantes.length === 0) {
-        relatorioDiv.innerHTML = '<p>Nenhum participante cadastrado.</p>';
+        relatorioDiv.innerHTML = ganhadorHtml + '<p>Nenhum participante cadastrado.</p>';
       } else {
-        relatorioDiv.innerHTML = `<table style='width:100%;border-collapse:collapse;'>
-          <tr style='background:#0a2342; color:#fff;'><th style='padding:6px;'>Nº</th><th style='padding:6px;'>Nome</th><th style='padding:6px;'>Status</th><th style='padding:6px;'>Ganhador</th></tr>` +
-          participantes.map(p => `<tr style='background:${p.status==="pago"?"#43e97b22":(p.status==="falta"?"#ff3b3f22":"#fff")};'><td style='padding:6px;text-align:center;'>${p.numero}</td><td style='padding:6px;'>${p.nome}</td><td style='padding:6px;text-align:center;color:${p.status==="pago"?"#43e97b":(p.status==="falta"?"#ff3b3f":"#0a2342")};font-weight:bold;'>${p.status==="pago"?"Pago":(p.status==="falta"?"Falta Pagar":"-")}</td><td style='padding:6px;text-align:center;font-weight:bold;color:#ff3b3f;'>${ultimoGanhadores.includes(p.numero) ? '🏆' : ''}</td></tr>`).join('') + '</table>';
+        relatorioDiv.innerHTML = ganhadorHtml + `<table style='width:100%;border-collapse:collapse;'>
+          <tr style='background:#0a2342; color:#fff;'><th style='padding:6px;'>Nº</th><th style='padding:6px;'>Nome</th><th style='padding:6px;'>Status</th></tr>` +
+          participantes.map(p => `<tr style='background:${p.status==="pago"?"#43e97b22":(p.status==="falta"?"#ff3b3f22":"#fff")};'><td style='padding:6px;text-align:center;'>${p.numero}</td><td style='padding:6px;'>${p.nome}</td><td style='padding:6px;text-align:center;color:${p.status==="pago"?"#43e97b":(p.status==="falta"?"#ff3b3f":"#0a2342")};font-weight:bold;'>${p.status==="pago"?"Pago":(p.status==="falta"?"Falta Pagar":"-")}</td></tr>`).join('') + '</table>';
       }
       relatorioContainer.style.display = 'block';
       window.scrollTo({top:0, behavior:'smooth'});
