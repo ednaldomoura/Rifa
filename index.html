@@ -286,9 +286,16 @@
       const relatorioDiv = document.getElementById('relatorio');
       const relatorioContainer = document.getElementById('relatorioContainer');
       let ganhadorHtml = '';
+      // Destaque para o último ganhador
+      if (historicoGanhadores.length > 0) {
+        const ultimo = historicoGanhadores[historicoGanhadores.length - 1];
+        ganhadorHtml += `<div style='margin-bottom:18px; padding:10px; background:linear-gradient(90deg,#43e97b,#0a2342,#ff3b3f); color:#fff; border-radius:10px; font-size:1.15rem; font-weight:bold;'>
+          Último sorteio (${ultimo.data}):<br> ${ultimo.ganhadores.map(g => `🎉 Nº <b>${g.numero}</b> - ${g.nome}`).join(' | ')}
+        </div>`;
+      }
       // Histórico de todos os sorteios
       if (historicoGanhadores.length > 0) {
-        ganhadorHtml = `<div style='margin-bottom:15px;'><b style='color:#ff3b3f;'>Histórico de Ganhadores:</b><ul style='padding-left:18px;'>` +
+        ganhadorHtml += `<div style='margin-bottom:15px;'><b style='color:#ff3b3f;'>Histórico de Ganhadores:</b><ul style='padding-left:18px;'>` +
           historicoGanhadores.map(h => `<li><span style='color:#0a2342;'>${h.data}:</span> ` + h.ganhadores.map(g => `Nº <b>${g.numero}</b> - ${g.nome}`).join(' | ') + '</li>').join('') + '</ul></div>';
       }
       if (participantes.length === 0) {
