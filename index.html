@@ -180,6 +180,15 @@
       selectNumero.appendChild(opt);
     }
 
+    // Carregar histórico do localStorage ao iniciar
+    if (localStorage.getItem('historicoGanhadores')) {
+      historicoGanhadores = JSON.parse(localStorage.getItem('historicoGanhadores'));
+    }
+    if (localStorage.getItem('participantes')) {
+      participantes = JSON.parse(localStorage.getItem('participantes'));
+      atualizarLista();
+    }
+
     form.onsubmit = function(e) {
       e.preventDefault();
       const nome = document.getElementById('nome').value.trim();
@@ -191,6 +200,7 @@
       }
       participantes.push({ nome, numero, status: '' });
       atualizarLista();
+      localStorage.setItem('participantes', JSON.stringify(participantes));
       form.reset();
       document.getElementById('nome').focus();
     };
@@ -207,6 +217,7 @@
     window.remover = function(numero) {
       participantes = participantes.filter(p => p.numero !== numero);
       atualizarLista();
+      localStorage.setItem('participantes', JSON.stringify(participantes));
     };
 
     window.marcarPago = function(numero) {
@@ -214,6 +225,7 @@
       if (idx !== -1) {
         participantes[idx].status = 'pago';
         atualizarLista();
+        localStorage.setItem('participantes', JSON.stringify(participantes));
       }
     };
 
@@ -222,6 +234,7 @@
       if (idx !== -1) {
         participantes[idx].status = 'falta';
         atualizarLista();
+        localStorage.setItem('participantes', JSON.stringify(participantes));
       }
     };
 
@@ -259,11 +272,13 @@
         copia.splice(idx, 1);
       }
       ultimosGanhadores = ganhadores.map(g => ({ numero: g.numero, nome: g.nome }));
-      // Salva no histórico com data/hora
       historicoGanhadores.push({
         data: new Date().toLocaleString('pt-BR'),
         ganhadores: ultimosGanhadores.map(g => ({ numero: g.numero, nome: g.nome }))
       });
+      // Salva histórico e participantes no localStorage
+      localStorage.setItem('historicoGanhadores', JSON.stringify(historicoGanhadores));
+      localStorage.setItem('participantes', JSON.stringify(participantes));
       ganhadoresDiv.innerHTML = ganhadores.map(g => `<div class='ganhador'>🎉 Nº <b>${g.numero}</b> - <span>${g.nome}</span><br><span style='font-size:1.2rem;color:#f9d423;'>Meus parabéns, você é o vencedor!</span></div>`).join('');
     }
 
